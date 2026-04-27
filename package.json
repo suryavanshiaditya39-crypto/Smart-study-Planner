@@ -1,0 +1,17 @@
+{
+  "name": "smart-study-planner",
+  "version": "1.0.0",
+  "description": "A comprehensive study planning application with task management",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Build complete'",
+    "start": "node api/tasks.js"
+  },
+  "dependencies": {
+    "mongoose": "^8.0.3"
+  },
+  "devDependencies": {
+    "vercel": "^latest"
+  }
+}

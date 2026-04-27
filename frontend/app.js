@@ -5,8 +5,8 @@
 // ─────────────────────────────────────────────
 
 // ── API Base URL ──
-// Works on both localhost (dev) and production (deployed URL)
-const API_URL = `${window.location.origin}/tasks`;
+// Works on both localhost (dev) and production (Vercel)
+const API_URL = `${window.location.origin}/api/tasks`;
 
 // ── State ──
 let currentFilter = "all";      // active filter tab
