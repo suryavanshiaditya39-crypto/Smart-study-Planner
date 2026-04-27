@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: smart-study-planner
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: MONGO_URI
+        scope: build,runtime
+        value: ${MONGO_URI}
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000

@@ -5,8 +5,8 @@
 // ─────────────────────────────────────────────
 
 // ── API Base URL ──
-// Change this if your backend runs on a different port
-const API_URL = "http://localhost:5000/tasks";
+// Works on both localhost (dev) and production (deployed URL)
+const API_URL = `${window.location.origin}/tasks`;
 
 // ── State ──
 let currentFilter = "all";      // active filter tab
