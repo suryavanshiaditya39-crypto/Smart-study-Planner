@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Study Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Distinctive font pairing: Syne (display) + DM Sans (body) -->
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Toast notification (success/error messages) ── -->
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <!-- ── Delete Confirmation Modal ── -->
+  <div id="deleteModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-box">
+      <div class="modal-icon">🗑️</div>
+      <h3 id="modalTitle">Delete Task?</h3>
+      <p>This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button id="cancelDeleteBtn" class="btn btn-ghost">Cancel</button>
+        <button id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Edit Task Modal ── -->
+  <div id="editModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+    <div class="modal-box modal-box--wide">
+      <h3 id="editModalTitle">Edit Task</h3>
+      <form id="editForm" novalidate>
+        <input type="hidden" id="editTaskId" />
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editTitle">Task Title</label>
+            <input type="text" id="editTitle" placeholder="e.g. Revise Chapter 5" />
+          </div>
+          <div class="form-group">
+            <label for="editSubject">Subject</label>
+            <input type="text" id="editSubject" placeholder="e.g. Physics" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editPriority">Priority</label>
+            <select id="editPriority">
+              <option value="low">🟢 Low</option>
+              <option value="medium" selected>🟡 Medium</option>
+              <option value="high">🔴 High</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editDueDate">Due Date</label>
+            <input type="date" id="editDueDate" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="editNotes">Notes (optional)</label>
+          <textarea id="editNotes" rows="2" placeholder="Any extra details..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="cancelEditBtn" class="btn btn-ghost">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── MAIN LAYOUT ── -->
+  <div class="app-wrapper">
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-icon">📚</span>
+        <div>
+          <div class="brand-name">StudyPlanner</div>
+          <div class="brand-sub">Smart • Focused</div>
+        </div>
+      </div>
+
+      <!-- Stats cards -->
+      <div class="stats-section">
+        <div class="stat-card stat-total">
+          <div class="stat-value" id="statTotal">0</div>
+          <div class="stat-label">Total Tasks</div>
+        </div>
+        <div class="stat-card stat-pending">
+          <div class="stat-value" id="statPending">0</div>
+          <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-card stat-done">
+          <div class="stat-value" id="statCompleted">0</div>
+          <div class="stat-label">Completed</div>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="progress-section">
+        <div class="progress-label">
+          <span>Progress</span>
+          <span id="progressPct">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Filter buttons -->
+      <nav class="filter-nav">
+        <button class="filter-btn active" data-filter="all">All Tasks</button>
+        <button class="filter-btn" data-filter="pending">Pending</button>
+        <button class="filter-btn" data-filter="completed">Completed</button>
+      </nav>
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <main class="main-content">
+
+      <!-- Top bar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1 class="page-title">My Tasks</h1>
+          <p class="page-sub" id="dateDisplay"></p>
+        </div>
+        <div class="topbar-right">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Search tasks or subjects..." />
+          </div>
+        </div>
+      </header>
+
+      <!-- Add Task Form -->
+      <section class="add-task-section">
+        <div class="section-header">
+          <h2>Add New Task</h2>
+          <button class="toggle-form-btn" id="toggleFormBtn" aria-expanded="true">− Collapse</button>
+        </div>
+
+        <form id="addTaskForm" class="task-form" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="title">Task Title <span class="required">*</span></label>
+              <input type="text" id="title" placeholder="e.g. Complete Past Papers" />
+            </div>
+            <div class="form-group">
+              <label for="subject">Subject <span class="required">*</span></label>
+              <input type="text" id="subject" placeholder="e.g. Mathematics" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="priority">Priority <span class="required">*</span></label>
+              <select id="priority">
+                <option value="low">🟢 Low</option>
+                <option value="medium" selected>🟡 Medium</option>
+                <option value="high">🔴 High</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="dueDate">Due Date <span class="required">*</span></label>
+              <input type="date" id="dueDate" />
+            </div>
+            <div class="form-group">
+              <label for="notes">Notes</label>
+              <input type="text" id="notes" placeholder="Optional notes..." />
+            </div>
+          </div>
+          <div class="form-footer">
+            <button type="submit" class="btn btn-primary btn-add" id="addBtn">
+              <span>＋ Add Task</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Task List -->
+      <section class="task-list-section">
+        <div class="section-header">
+          <h2>Task List</h2>
+          <span class="task-count-badge" id="taskCountBadge">0 tasks</span>
+        </div>
+
+        <!-- Loading spinner -->
+        <div id="loadingSpinner" class="spinner-wrap">
+          <div class="spinner"></div>
+          <p>Loading tasks...</p>
+        </div>
+
+        <!-- Empty state -->
+        <div id="emptyState" class="empty-state hidden">
+          <div class="empty-icon">🎯</div>
+          <h3>No tasks found</h3>
+          <p>Add your first task above to get started!</p>
+        </div>
+
+        <!-- Task cards container -->
+        <div id="taskList" class="task-grid"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Link to our JavaScript file -->
+  <script src="app.js"></script>
+</body>
+</html>
